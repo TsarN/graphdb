@@ -14,9 +14,9 @@ int main(int argc, char **argv) {
     reader.readUri(argv[1]);
 
     for (const auto &triple : graph.triples) {
-        std::cout << triple.subject << " "
-                  << triple.predicate << " "
-                  << triple.object << std::endl;
+        std::cout << "{ \"" << triple.subject << "\", \""
+                  << triple.predicate << "\", \""
+                  << triple.object << "\" }, " << std::endl;
     }
     return 0;
 }

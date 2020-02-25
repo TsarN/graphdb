@@ -1,19 +1,31 @@
-BIN := graphdb
+BIN := build/graphdb
+TEST := build/graphdb-test
+
 SRCS := \
     src/graph.cpp \
-    src/rdf.cpp \
-    src/main.cpp
+    src/rdf.cpp
+
+BIN_SRCS := $(SRCS) src/main.cpp
+TEST_SRCS := $(SRCS) test/main.cpp
+
 INCLUDES := \
-	-Ithirdparty/serd
+	-Isrc \
+	-Ithirdparty/serd \
+	-Ithirdparty
 
 OBJDIR := build/objs
 DEPDIR := build/deps
 
-OBJS := $(patsubst %,$(OBJDIR)/%.o,$(basename $(SRCS)))
-DEPS := $(patsubst %,$(DEPDIR)/%.d,$(basename $(SRCS)))
+BIN_OBJS := $(patsubst %,$(OBJDIR)/%.o,$(basename $(BIN_SRCS)))
+BIN_DEPS := $(patsubst %,$(DEPDIR)/%.d,$(basename $(BIN_SRCS)))
 
-$(shell mkdir -p $(dir $(OBJS)) >/dev/null)
-$(shell mkdir -p $(dir $(DEPS)) >/dev/null)
+TEST_OBJS := $(patsubst %,$(OBJDIR)/%.o,$(basename $(TEST_SRCS)))
+TEST_DEPS := $(patsubst %,$(DEPDIR)/%.d,$(basename $(TEST_SRCS)))
+
+$(shell mkdir -p $(dir $(BIN_OBJS)) >/dev/null)
+$(shell mkdir -p $(dir $(BIN_DEPS)) >/dev/null)
+$(shell mkdir -p $(dir $(TEST_OBJS)) >/dev/null)
+$(shell mkdir -p $(dir $(TEST_DEPS)) >/dev/null)
 
 CC := gcc
 CXX := g++
@@ -35,8 +47,11 @@ POSTCOMPILE = mv -f $(DEPDIR)/$*.Td $(DEPDIR)/$*.d
 
 all: build-deps $(BIN)
 
+check: $(TEST)
+	$(TEST)
+
 clean:
-	rm -r build/ $(BIN)
+	rm -rf build/
 
 build-deps: thirdparty/serd/build/libserd-0.a
 
@@ -47,7 +62,10 @@ get-deps:
 	git submodule update --init --recursive
 	curl -L "https://github.com/catchorg/Catch2/releases/download/v2.11.1/catch.hpp" -o thirdparty/catch.hpp
 
-$(BIN): $(OBJS) $(LIBS)
+$(BIN): $(BIN_OBJS) $(LIBS)
+	$(LINK.o) $^
+
+$(TEST): $(TEST_OBJS) $(LIBS)
 	$(LINK.o) $^
 
 $(OBJDIR)/%.o: %.c
@@ -77,6 +95,6 @@ $(OBJDIR)/%.o: %.cxx $(DEPDIR)/%.d
 .PRECIOUS: $(DEPDIR)/%.d
 $(DEPDIR)/%.d: ;
 
--include $(DEPS)
+-include $(BIN_DEPS) $(TEST_DEPS)
 
-.PHONY: get-deps build-deps build-serd clean all
+.PHONY: get-deps build-deps build-serd clean all check

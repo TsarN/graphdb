@@ -19,6 +19,7 @@ public:
     void swap(RdfReader &that);
 
     void readUri(const std::string &uri);
+    void readString(const std::string &data);
 
 private:
     static SerdStatus statementSink(

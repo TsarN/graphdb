@@ -44,6 +44,10 @@ void RdfReader::readUri(const std::string &uri) {
     serd_reader_read_file(reader, (uint8_t*)uri.c_str());
 }
 
+void RdfReader::readString(const std::string &data) {
+    serd_reader_read_string(reader, (uint8_t*)data.c_str());
+}
+
 SerdStatus RdfReader::statementSink(
         void *handle,
         SerdStatementFlags flags,
