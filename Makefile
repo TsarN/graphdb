@@ -59,6 +59,7 @@ thirdparty/serd/build/libserd-0.a:
 	cd thirdparty/serd && ./waf configure --static && ./waf
 
 get-deps:
+	mkdir -p thirdparty
 	git submodule update --init --recursive
 	curl -L "https://github.com/catchorg/Catch2/releases/download/v2.11.1/catch.hpp" -o thirdparty/catch.hpp
 
