@@ -1,5 +1,5 @@
 # graphdb
-[![Build Status](https://travis-ci.com/tsarn/graphdb.svg?branch=rdf)](https://travis-ci.org/tsarn/graphdb)
+[![Build Status](https://api.travis-ci.org/tsarn/graphdb.svg?branch=rdf)](https://travis-ci.org/tsarn/graphdb)
 
 ## Building
 
