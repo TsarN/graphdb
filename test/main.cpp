@@ -3,40 +3,6 @@
 #include "graph.hpp"
 #include "rdf.hpp"
 
-const char artists_ttl[] =
-    "@prefix ex: <http://example.org/> .\n"
-    "@prefix foaf: <http://xmlns.com/foaf/0.1/> .\n"
-    "ex:Picasso a ex:Artist ;\n"
-    "           foaf:firstName \"Pablo\" ;\n"
-    "           foaf:surname \"Picasso\";\n"
-    "           ex:creatorOf ex:guernica ;\n"
-    "           ex:homeAddress _:node1 .\n"
-    "\n"
-    "_:node1  ex:street \"31 Art Gallery\" ;\n"
-    "         ex:city \"Madrid\" ;\n"
-    "         ex:country \"Spain\" .\n"
-    "\n"
-    "ex:guernica a ex:Painting ;\n"
-    "            rdfs:label \"Guernica\";\n"
-    "            ex:technique \"oil on canvas\".\n"
-    "\n"
-    "ex:VanGogh a ex:Artist ;\n"
-    "           foaf:firstName \"Vincent\" ;\n"
-    "           foaf:surname \"van Gogh\";\n"
-    "           ex:creatorOf ex:starryNight, ex:sunflowers, ex:potatoEaters .\n"
-    "\n"
-    "ex:starryNight a ex:Painting ;\n"
-    "               ex:technique \"oil on canvas\";\n"
-    "               rdfs:label \"Starry Night\" .\n"
-    "\n"
-    "ex:sunflowers a ex:Painting ;\n"
-    "              ex:technique \"oil on canvas\";\n"
-    "              rdfs:label \"Sunflowers\" .\n"
-    "\n"
-    "ex:potatoEaters a ex:Painting ;\n"
-    "                ex:technique \"oil on canvas\";\n"
-    "                rdfs:label \"The Potato Eaters\" .\n";
-
 const std::vector<Triple> artists_triples = {
     { "ex:Picasso", "http://www.w3.org/1999/02/22-rdf-syntax-ns#type", "ex:Artist" },
     { "ex:Picasso", "foaf:firstName", "Pablo" },
@@ -69,7 +35,7 @@ const std::vector<Triple> artists_triples = {
 TEST_CASE( "Painters paint paintings", "[rdf]" ) {
     TripleListGraph graph;
     RdfReader reader(RdfFormat::Turtle, graph);
-    reader.readString(artists_ttl);
+    reader.readUri("test/sample.ttl");
 
     REQUIRE(graph.triples == artists_triples);
 }
