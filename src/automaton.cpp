@@ -2,6 +2,7 @@
 #include <sstream>
 #include <algorithm>
 #include <set>
+#include <functional>
 
 const int NFA::Epsilon = -1;
 
