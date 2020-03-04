@@ -23,6 +23,8 @@ public:
     };
 
     void minimize();
+    bool accepts(const std::string &s) const;
+    int size() const;
 
     friend std::ostream &operator<<(std::ostream &os, const DFA &dfa);
 

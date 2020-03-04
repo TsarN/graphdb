@@ -104,6 +104,26 @@ void DFA::minimize() {
     nodes = std::move(newNodes);
 }
 
+bool DFA::accepts(const std::string &s) const {
+    auto state = nodes[0].get();
+
+    for (char c : s) {
+        if (state->trans.find(c) != state->trans.end()) {
+            state = state->trans[c];
+        } else if (state->trans.find(AnyChar) != state->trans.end()) {
+            state = state->trans[AnyChar];
+        } else {
+            return false;
+        }
+    }
+
+    return state->term;
+}
+
+int DFA::size() const {
+    return nodes.size();
+}
+
 NFA::NFA() {
     auto node = std::make_unique<NFA::Node>();
     node->term = true;
