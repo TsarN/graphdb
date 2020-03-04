@@ -55,6 +55,9 @@ all: build-deps $(BIN)
 check: $(TEST)
 	$(TEST)
 
+check-vg: $(TEST)
+	valgrind $(TEST)
+
 clean:
 	rm -rf build/
 
@@ -103,4 +106,4 @@ $(DEPDIR)/%.d: ;
 
 -include $(BIN_DEPS) $(TEST_DEPS)
 
-.PHONY: get-deps build-deps build-serd clean all check
+.PHONY: get-deps build-deps build-serd clean all check check-vg

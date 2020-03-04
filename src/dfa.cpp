@@ -148,10 +148,10 @@ void DFA::minimize() {
                     continue;
                 }
 
+                auto wit = std::find(w.begin(), w.end(), y);
+
                 p.push_back(s1);
                 p.push_back(s2);
-
-                auto wit = std::find(w.begin(), w.end(), y);
 
                 if (wit != w.end()) {
                     w.erase(wit);

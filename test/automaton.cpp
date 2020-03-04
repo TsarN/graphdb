@@ -111,6 +111,23 @@ TEST_CASE( "Automaton from regex", "[regex]" ) {
 }
 
 TEST_CASE("Automaton intersection", "[intersection]") {
+    SECTION( "Empty intersection" ) {
+        auto dfa = DFA::fromRegex("a");
+        dfa.intersect(DFA::fromRegex("b"));
+
+        SECTION( "correctness" ) {
+            CHECK( !dfa.accepts("") );
+            CHECK( !dfa.accepts("a") );
+            CHECK( !dfa.accepts("b") );
+            CHECK( !dfa.accepts("hello") );
+            CHECK( !dfa.accepts("nothing goes") );
+        }
+
+        SECTION( "size" ) {
+            REQUIRE(dfa.size() == 1);
+        }
+    }
+
     SECTION( "Divisible by 6" ) {
         auto dfa = DFA::fromRegex("(0|(1(01*0)*1))*");
         dfa.intersect(DFA::fromRegex("(0|1)*0"));
