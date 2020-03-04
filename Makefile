@@ -4,7 +4,8 @@ TEST := build/graphdb-test
 SRCS := \
     src/graph.cpp \
     src/rdf.cpp \
-    src/automaton.cpp
+    src/dfa.cpp \
+    src/nfa.cpp
 
 BIN_SRCS := $(SRCS) src/main.cpp
 TEST_SRCS := $(SRCS) \

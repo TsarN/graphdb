@@ -65,22 +65,6 @@ TEST_CASE( "Automaton from regex", "[regex]" ) {
         }
     }
 
-    SECTION( "Regex: .*" ) {
-        auto nfa = NFA::fromRegex(".*");
-        auto dfa = nfa.determinize();
-
-        SECTION( "correctness" ) {
-            CHECK( dfa.accepts("") );
-            CHECK( dfa.accepts("a") );
-            CHECK( dfa.accepts("hello") );
-            CHECK( dfa.accepts("anything goes") );
-        }
-
-        SECTION( "minimality" ) {
-            REQUIRE(dfa.size() == 1);
-        }
-    }
-
     SECTION( "Empty regex" ) {
         auto nfa = NFA::fromRegex("");
         auto dfa = nfa.determinize();

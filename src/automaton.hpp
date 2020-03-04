@@ -7,6 +7,11 @@
 #include <exception>
 #include <iostream>
 
+// special transitions
+enum {
+    Epsilon = -1
+};
+
 class ParseException : public std::exception {
     const char* what() const noexcept {
         return "Parse error";
@@ -22,6 +27,14 @@ public:
         bool term = false;
     };
 
+    DFA() = default;
+    DFA(const DFA& that);
+    DFA(DFA &&that) = default;
+    DFA &operator=(DFA that);
+    void swap(DFA &that);
+
+    void intersect(DFA that);
+    void stripUnreachable();
     void minimize();
     bool accepts(const std::string &s) const;
     int size() const;
@@ -43,12 +56,16 @@ public:
     };
 
     NFA();
+    NFA(const NFA& that);
+    NFA(NFA &&that) = default;
+    NFA &operator=(NFA that);
+    void swap(NFA &that);
 
     static NFA fromRegex(const std::string &str);
 
     void addCharacter(int c);
-    void concat(NFA &&that);
-    void alternative(NFA &&that);
+    void concat(NFA that);
+    void alternative(NFA that);
     void kleene();
     DFA determinize() const;
 
