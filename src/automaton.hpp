@@ -33,6 +33,8 @@ public:
     DFA &operator=(DFA that);
     void swap(DFA &that);
 
+    static DFA fromRegex(const std::string &str);
+
     void intersect(DFA that);
     void stripUnreachable();
     void minimize();

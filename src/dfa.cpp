@@ -30,6 +30,10 @@ void DFA::swap(DFA &that) {
     nodes.swap(that.nodes);
 }
 
+DFA DFA::fromRegex(const std::string &str) {
+    return NFA::fromRegex(str).determinize();
+}
+
 void DFA::intersect(DFA that) {
     std::map<Node*, int> thisIdx, thatIdx;
     auto thisNodes = std::move(nodes);

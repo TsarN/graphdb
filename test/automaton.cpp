@@ -4,8 +4,7 @@
 
 TEST_CASE( "Automaton from regex", "[regex]" ) {
     SECTION( "Regex: 0|1*" ) {
-        auto nfa = NFA::fromRegex("0|1*");
-        auto dfa = nfa.determinize();
+        auto dfa = DFA::fromRegex("0|1*");
 
         SECTION( "correctness" ) {
             CHECK( dfa.accepts("") );
@@ -33,8 +32,7 @@ TEST_CASE( "Automaton from regex", "[regex]" ) {
 
     SECTION( "Regex: (0|(1(01*0)*1))*" ) {
         // Regex checks if a binary number is divisible by 3
-        auto nfa = NFA::fromRegex("(0|(1(01*0)*1))*");
-        auto dfa = nfa.determinize();
+        auto dfa = DFA::fromRegex("(0|(1(01*0)*1))*");
 
         SECTION( "correctness preset input" ) {
             CHECK( dfa.accepts("") );
@@ -66,8 +64,7 @@ TEST_CASE( "Automaton from regex", "[regex]" ) {
     }
 
     SECTION( "Empty regex" ) {
-        auto nfa = NFA::fromRegex("");
-        auto dfa = nfa.determinize();
+        auto dfa = DFA::fromRegex("");
 
         SECTION( "correctness" ) {
             CHECK( dfa.accepts("") );
@@ -82,8 +79,7 @@ TEST_CASE( "Automaton from regex", "[regex]" ) {
     }
 
     SECTION( "Regex: ab*(c|)" ) {
-        auto nfa = NFA::fromRegex("ab*(c|)");
-        auto dfa = nfa.determinize();
+        auto dfa = DFA::fromRegex("ab*(c|)");
 
         SECTION( "correctness" ) {
             CHECK( dfa.accepts("a") );
@@ -111,5 +107,43 @@ TEST_CASE( "Automaton from regex", "[regex]" ) {
         CHECK_THROWS_AS(NFA::fromRegex(")"), ParseException);
         CHECK_THROWS_AS(NFA::fromRegex("*b"), ParseException);
         CHECK_THROWS_AS(NFA::fromRegex("|"), ParseException);
+    }
+}
+
+TEST_CASE("Automaton intersection", "[intersection]") {
+    SECTION( "Divisible by 6" ) {
+        auto dfa = DFA::fromRegex("(0|(1(01*0)*1))*");
+        dfa.intersect(DFA::fromRegex("(0|1)*0"));
+
+        SECTION( "correctness preset input" ) {
+            CHECK( dfa.accepts("0") );
+            CHECK( dfa.accepts("110") );
+            CHECK( dfa.accepts("1100") );
+            CHECK( dfa.accepts("10010") );
+            CHECK( !dfa.accepts("") );
+            CHECK( !dfa.accepts("11") );
+            CHECK( !dfa.accepts("1") );
+            CHECK( !dfa.accepts("10") );
+        }
+
+
+        SECTION( "correctness random input" ) {
+            int n = GENERATE(take(100, random(1, 10000)));
+            std::string bin;
+            for (int i = n; i > 0; i /= 2) {
+                bin.push_back('0' + (i & 1));
+            }
+            std::reverse(bin.begin(), bin.end());
+
+            if (n % 6 == 0) {
+                CHECK( dfa.accepts(bin) );
+            } else {
+                CHECK( !dfa.accepts(bin) );
+            }
+        }
+
+        SECTION( "minimality" ) {
+            REQUIRE(dfa.size() == 4);
+        }
     }
 }
