@@ -22,6 +22,8 @@ public:
         bool term = false;
     };
 
+    void minimize();
+
     friend std::ostream &operator<<(std::ostream &os, const DFA &dfa);
 
 private:
@@ -37,8 +39,6 @@ public:
         std::multimap<int, Node*> trans;
         bool term = false;
     };
-
-    static const int Epsilon;
 
     NFA();
 

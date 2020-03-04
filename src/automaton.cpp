@@ -4,7 +4,105 @@
 #include <set>
 #include <functional>
 
-const int NFA::Epsilon = -1;
+// special transitions
+const int AnyChar = -2;
+const int Epsilon = -1;
+
+void DFA::minimize() {
+    // https://en.wikipedia.org/wiki/DFA_minimization#Hopcroft's_algorithm
+
+    std::map<Node*, int> indexes;
+    std::vector<std::set<int>> p(2);
+    for (auto &node : nodes) {
+        int idx = indexes[node.get()] = indexes.size();
+        if (node->term) {
+            p[0].insert(idx);
+        } else {
+            p[1].insert(idx);
+        }
+    }
+
+    auto w = p;
+
+    while (!w.empty()) {
+        auto a = w.back();
+        w.pop_back();
+        if (a.empty()) continue;
+
+        std::map<int, std::set<int>> xs;
+
+        for (auto &node : nodes) {
+            for (auto &[ch, to] : node->trans) {
+                auto idx = indexes[to];
+                if (a.find(idx) != a.end()) {
+                    xs[ch].insert(indexes[node.get()]);
+                }
+            }
+        }
+
+        for (auto &[ch, x] : xs) {
+            for (int j = 0; j < p.size();) {
+                auto &y = p[j];
+                std::set<int> s1, s2;
+
+                for (int i : y) {
+                    if (x.find(i) != x.end()) {
+                        s1.insert(i);
+                    } else {
+                        s2.insert(i);
+                    }
+                }
+
+                if (s1.empty() || s2.empty()) {
+                    ++j;
+                    continue;
+                }
+
+                p.push_back(s1);
+                p.push_back(s2);
+
+                auto wit = std::find(w.begin(), w.end(), y);
+
+                if (wit != w.end()) {
+                    w.erase(wit);
+                    w.push_back(s1);
+                    w.push_back(s2);
+                } else {
+                    if (s1.size() <= s2.size()) {
+                        w.push_back(s1);
+                    } else {
+                        w.push_back(s2);
+                    }
+                }
+
+                p.erase(p.begin() + j);
+            }
+        }
+    }
+
+    std::vector<int> equiv(nodes.size());
+    for (auto &s : p) {
+        if (s.empty()) continue;
+        for (int i : s) {
+            equiv[i] = *s.begin();
+        }
+    }
+
+    for (auto &node : nodes) {
+        for (auto &[ch, to] : node->trans) {
+            to = nodes[equiv[indexes[to]]].get();
+        }
+    }
+
+    std::vector<std::unique_ptr<Node>> newNodes;
+
+    for (int i = 0; i < nodes.size(); ++i) {
+        if (equiv[i] != i) continue;
+        newNodes.emplace_back(std::move(nodes[i]));
+    }
+
+    nodes = std::move(newNodes);
+}
 
 NFA::NFA() {
     auto node = std::make_unique<NFA::Node>();
@@ -72,10 +170,15 @@ NFA NFA::fromUnit(std::istream &s) {
         return nfa;
     }
 
-    // normal character
     s.get();
     auto nfa = NFA{};
-    nfa.addCharacter(ch);
+    if (ch == '.') {
+        // any character
+        nfa.addCharacter(AnyChar);
+    } else {
+        // normal character
+        nfa.addCharacter(ch);
+    }
     return nfa;
 }
 
@@ -151,8 +254,6 @@ DFA NFA::determinize() const {
         used[v] = 1;
         for (auto [ch, to] : nodes[v]->trans) {
             if (ch != Epsilon) {
-                // Could be break since we use an ordered map,
-                // but readability matters
                 continue;
             }
 
@@ -249,15 +350,30 @@ DFA NFA::determinize() const {
     for (int i = 0; i < indexesFinalV.size(); ++i) {
         auto &s = indexesFinalV[i];
         std::map<int, std::set<int>> u;
+        std::set<int> any;
         auto from = dfa.nodes[i].get();
+
         for (int j : s) {
             for (auto &[ch, to] : tr[j]) {
                 if (ch == Epsilon) continue;
                 for (int k : to) {
                     u[ch].insert(k);
+                    if (ch == AnyChar) {
+                        any.insert(k);
+                    }
                 }
             }
         }
+
+        // Normalize AnyChar
+        for (auto &[ch, s] : u) {
+            if (ch == AnyChar) continue;
+            for (int j : s) {
+                u[AnyChar].erase(j);
+            }
+            s.insert(any.begin(), any.end());
+        }
+
         for (auto &[ch, to] : u) {
             if (to.empty()) continue;
             if (indexesFinal.find(to) == indexesFinal.end()) {
@@ -279,6 +395,8 @@ DFA NFA::determinize() const {
             from->trans[ch] = node;
         }
     }
+
+    dfa.minimize();
 
     // whew
 
@@ -308,8 +426,11 @@ std::ostream &operator<<(std::ostream &os, const NFA &nfa) {
             int toIdx = indexes[to];
             os << fromIdx << " -> " << toIdx;
             std::string label{(char)ch};
-            if (ch == NFA::Epsilon) {
+            if (ch == Epsilon) {
                 label = "eps";
+            }
+            if (ch == AnyChar) {
+                label = "*";
             }
             os << " [label = \"" << label << "\" ];" << std::endl;
         }
@@ -341,7 +462,11 @@ std::ostream &operator<<(std::ostream &os, const DFA &dfa) {
         for (auto [ch, to] : node->trans) {
             int toIdx = indexes[to];
             os << fromIdx << " -> " << toIdx;
-            os << " [label = \"" << (char)ch << "\" ];" << std::endl;
+            std::string label{(char)ch};
+            if (ch == AnyChar) {
+                label = "*";
+            }
+            os << " [label = \"" << label << "\" ];" << std::endl;
         }
     }
 
