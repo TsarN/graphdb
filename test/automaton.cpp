@@ -110,7 +110,7 @@ TEST_CASE( "Automaton from regex", "[regex]" ) {
     }
 }
 
-TEST_CASE("Automaton intersection", "[intersection]") {
+TEST_CASE("DFA intersection", "[dfa_intersection]") {
     SECTION( "Empty intersection" ) {
         auto dfa = DFA::fromRegex("a");
         dfa.intersect(DFA::fromRegex("b"));

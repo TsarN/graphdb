@@ -18,6 +18,9 @@ class ParseException : public std::exception {
     }
 };
 
+class DFA;
+class NFA;
+
 class DFA {
     friend class NFA;
 
@@ -65,6 +68,7 @@ public:
 
     static NFA fromRegex(const std::string &str);
 
+    void intersect(const DFA& that);
     void addCharacter(int c);
     void concat(NFA that);
     void alternative(NFA that);

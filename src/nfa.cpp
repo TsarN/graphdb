@@ -148,6 +148,46 @@ void NFA::kleene() {
     nodes[0]->term = true;
 }
 
+void NFA::intersect(const DFA& that) {
+    // precondition: NFA doesn't contain epsilon-transitions
+    std::map<Node*, int> thisIdx;
+    std::map<DFA::Node*, int> thatIdx;
+    auto thisNodes = std::move(nodes);
+    nodes.clear();
+
+    for (auto &node : thisNodes) {
+        thisIdx[node.get()] = thisIdx.size();
+    }
+
+    for (auto &node : that.nodes) {
+        thatIdx[node.get()] = thatIdx.size();
+    }
+
+    for (int i = 0; i < thisNodes.size(); ++i) {
+        for (int j = 0; j < that.nodes.size(); ++j) {
+            auto node = std::make_unique<Node>();
+            node->term = thisNodes[i]->term && that.nodes[j]->term;
+            nodes.emplace_back(std::move(node));
+        }
+    }
+
+    for (int i = 0; i < thisNodes.size(); ++i) {
+        auto &ti = thisNodes[i]->trans;
+        for (int j = 0; j < that.nodes.size(); ++j) {
+            int idx = i * that.nodes.size() + j;
+            auto &tj = that.nodes[j]->trans;
+
+            for (auto &[ch, to] : ti) {
+                if (tj.find(ch) == tj.end()) continue;
+                int u = thisIdx[to];
+                int v = thatIdx[tj[ch]];
+                int tidx = u * that.nodes.size() + v;
+                nodes[idx]->trans.emplace(ch, nodes[tidx].get());
+            }
+        }
+    }
+}
+
 DFA NFA::determinize() const {
     std::map<NFA::Node*, int> indexes;
     for (auto &node : nodes) {
