@@ -3,10 +3,15 @@ TEST := build/graphdb-test
 
 SRCS := \
     src/graph.cpp \
-    src/rdf.cpp
+    src/rdf.cpp \
+    src/dfa.cpp \
+    src/nfa.cpp
 
 BIN_SRCS := $(SRCS) src/main.cpp
-TEST_SRCS := $(SRCS) test/main.cpp
+TEST_SRCS := $(SRCS) \
+    test/main.cpp \
+    test/rdf.cpp \
+    test/automaton.cpp
 
 INCLUDES := \
 	-Isrc \
@@ -33,7 +38,7 @@ LD := g++
 
 LIBS := thirdparty/serd/build/libserd-0.a
 LDLIBS := $(LIBS)
-FLAGS := -g -Wall -Wextra -pedantic
+FLAGS := -g -Wall -Wextra -pedantic -Wno-sign-compare
 CFLAGS := -std=c11 $(FLAGS) $(INCLUDES)
 CXXFLAGS := -std=c++17 $(FLAGS) $(INCLUDES)
 LDFLAGS :=
@@ -49,6 +54,9 @@ all: build-deps $(BIN)
 
 check: $(TEST)
 	$(TEST)
+
+check-vg: $(TEST)
+	valgrind $(TEST)
 
 clean:
 	rm -rf build/
@@ -98,4 +106,4 @@ $(DEPDIR)/%.d: ;
 
 -include $(BIN_DEPS) $(TEST_DEPS)
 
-.PHONY: get-deps build-deps build-serd clean all check
+.PHONY: get-deps build-deps build-serd clean all check check-vg
